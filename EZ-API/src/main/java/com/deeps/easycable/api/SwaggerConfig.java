@@ -40,7 +40,7 @@ public class SwaggerConfig {
 	public Docket api() {
 		return new Docket(DocumentationType.SWAGGER_2).select()
 				.apis(RequestHandlerSelectors.basePackage("com.deeps.easycable.api.controller"))
-				.paths(PathSelectors.any()).build().apiInfo(apiInfo()).groupName("KPI API")
+				.paths(PathSelectors.any()).build().apiInfo(apiInfo()).groupName("EasyCable- API")
 				.directModelSubstitute(LocalDate.class, String.class).genericModelSubstitutes(ResponseEntity.class)
 				.securitySchemes(Lists.newArrayList(apiKey())).securityContexts(Arrays.asList(securityContext()));
 	}	

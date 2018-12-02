@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table
-public class Package implements Serializable {
+public class SubscriptionPackage implements Serializable {
 
 	private static final long serialVersionUID = 7774563428562961990L;
 
@@ -38,7 +38,7 @@ public class Package implements Serializable {
 	private String name;
 	
 	@Column(nullable = false)
-	private long cost;
+	private Double cost;
 
 	public long getId() {
 		return id;
@@ -56,23 +56,38 @@ public class Package implements Serializable {
 		this.name = name;
 	}
 
-	public long getCost() {
+	public Double getCost() {
 		return cost;
 	}
 
-	public void setCost(long cost) {
+	public void setCost(Double cost) {
+		this.cost = cost;
+	}	
+
+	public Operator getOperator() {
+		return operator;
+	}
+
+	public void setOperator(Operator operator) {
+		this.operator = operator;
+	}
+
+	public SubscriptionPackage(long id, Operator operator, String name, Double cost) {
+		super();
+		this.id = id;
+		this.operator = operator;
+		this.name = name;
 		this.cost = cost;
 	}
 
 	@Override
 	public String toString() {
-		return "Package [id=" + id + ", name=" + name + ", cost=" + cost + "]";
+		return "SubscriptionPackage [id=" + id + ", operator=" + operator + ", name=" + name + ", cost=" + cost + "]";
 	}
 
-	public Package(long id, String name, long cost) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.cost = cost;
+	public SubscriptionPackage() {
+		
 	}	
+	
+	
 }

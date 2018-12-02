@@ -1,0 +1,17 @@
+package com.deeps.easycable.api.repo;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.deeps.easycable.api.entity.SubscriptionPackage;
+
+public interface SubscriptionPackageRepo extends JpaRepository<SubscriptionPackage, Long> {
+
+	public SubscriptionPackage findById(String subscriptionId);
+	
+	public List<SubscriptionPackage> findByOperatorId(long operator_id);
+	
+	public SubscriptionPackage findByOperatorIdAndName(long operator_id,String name);
+
+}

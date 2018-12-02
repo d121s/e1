@@ -35,7 +35,7 @@ public class OperatorController {
 	
 	@GetMapping("/operators/{operatorId}")
 	// @PreAuthorize("hasAnyAuthority('admin')")
-	public Operator getOperator(@PathVariable("operatorId") long operatorId) {
+	public Operator getOperator(@PathVariable("operatorId") Long operatorId) {
 		LOGGER.debug("Get Request to view Operator Details");
 		return oprServices.getOperator(operatorId);
 	}
@@ -46,13 +46,13 @@ public class OperatorController {
 	}
 	
 	@PutMapping("/operators/{operatorId}")
-	public Operator updateOperator(@PathVariable("operatorId") long operatorId,@RequestBody OperatorRequest oprRequest) {
+	public Operator updateOperator(@PathVariable("operatorId") Long operatorId,@RequestBody OperatorRequest oprRequest) {
 		return oprServices.updateOperator(oprRequest, operatorId);
 	}
 	
 
 	@DeleteMapping("/operators/{operatorId}")
-	public ServiceResponse deleteOperator(@PathVariable("operatorId") long operatorId) {
+	public ServiceResponse deleteOperator(@PathVariable("operatorId") Long operatorId) {
 		return oprServices.deleteOperator(operatorId);
 	}
 }
