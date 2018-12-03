@@ -35,15 +35,20 @@ public class CustomerPayment {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JsonIgnore
 	private Customer customer;
-
-	private Date subscritionPaymentDate;
-
+	
+	@Column(nullable=false)
 	private double subscriptionCost;
 
+	@Column(nullable=false)
 	private double paymentAmt;
 
+	@Column(nullable=false)
 	private String paymentStatus;
+	
+	@Column(nullable=false)
+	private Date subscriptionMonth;
 
+	@Column(nullable=false)
 	private Date paymentDate;
 
 	public long getId() {
@@ -68,14 +73,6 @@ public class CustomerPayment {
 
 	public void setCustomer(Customer customer) {
 		this.customer = customer;
-	}
-
-	public Date getSubscritionPaymentDate() {
-		return subscritionPaymentDate;
-	}
-
-	public void setSubscritionPaymentDate(Date subscritionPaymentDate) {
-		this.subscritionPaymentDate = subscritionPaymentDate;
 	}
 
 	public double getSubscriptionCost() {
@@ -109,13 +106,20 @@ public class CustomerPayment {
 	public void setPaymentDate(Date paymentDate) {
 		this.paymentDate = paymentDate;
 	}
+	
+	public Date getSubscriptionMonth() {
+		return subscriptionMonth;
+	}
+
+	public void setSubscriptionMonth(Date subscriptionMonth) {
+		this.subscriptionMonth = subscriptionMonth;
+	}
 
 	@Override
 	public String toString() {
-		return "CustomerPayment [id=" + id + ", operator=" + operator + ", customer=" + customer
-				+ ", subscritionPaymentDate=" + subscritionPaymentDate + ", subscriptionCost=" + subscriptionCost
-				+ ", paymentAmt=" + paymentAmt + ", paymentStatus=" + paymentStatus + ", paymentDate=" + paymentDate
-				+ "]";
+		return "CustomerPayment [id=" + id + ", operator=" + operator + ", customer=" + customer + ", subscriptionCost="
+				+ subscriptionCost + ", paymentAmt=" + paymentAmt + ", paymentStatus=" + paymentStatus
+				+ ", subscriptionMonth=" + subscriptionMonth + ", paymentDate=" + paymentDate + "]";
 	}
 
 	public CustomerPayment() {

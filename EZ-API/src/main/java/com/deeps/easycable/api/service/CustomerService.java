@@ -17,5 +17,7 @@ public interface CustomerService {
 	public Customer getCustomerDetails(Long customerId);
 
 	public List<Customer> getCustomerList(Long operatorId, Long packageId);
+	
+	boolean isCustomerUnderLimit(long operatorId);
 
 }

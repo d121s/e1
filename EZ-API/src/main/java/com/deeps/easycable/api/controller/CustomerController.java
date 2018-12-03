@@ -22,7 +22,7 @@ import com.deeps.easycable.api.service.CustomerService;
 @RestController
 public class CustomerController {
 
-	private static final Logger LOGGER = LogManager.getLogger(HealthCheckController.class);
+	private static final Logger LOGGER = LogManager.getLogger(CustomerController.class);
 
 	@Autowired
 	CustomerService custServices;

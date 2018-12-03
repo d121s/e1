@@ -18,6 +18,7 @@ import com.deeps.easycable.api.repo.OperatorRepo;
 import com.deeps.easycable.api.repo.SubscriptionPackageRepo;
 import com.deeps.easycable.api.response.ResponseStatus;
 import com.deeps.easycable.api.response.ServiceResponse;
+import com.deeps.easycable.api.service.CustomerService;
 import com.deeps.easycable.api.service.OperatorDataSetupService;
 
 @Service
@@ -32,25 +33,30 @@ public class OperatorDataSetupServiceImpl implements OperatorDataSetupService {
 	@Autowired
 	CustomerRepo custRepo;
 
+	@Autowired
+	CustomerService custService;
+
 	public ServiceResponse setupOperatorData(MultipartFile file, Long operatorId) {
-		int count = 0;
+		int uploadedRowcount = 0;
+		int customerCount=0;
 		try {
 			Workbook workbook = WorkbookFactory.create(file.getInputStream());
 			System.out.println("Workbook has " + workbook.getNumberOfSheets() + " Sheets : ");
 			Sheet sheet = workbook.getSheetAt(0);
 			System.out.println(sheet.getHeader());
-			//DataFormatter dataFormatter = new DataFormatter();
+			// DataFormatter dataFormatter = new DataFormatter();
 			System.out.println("\n\nIterating over Rows and Columns using for-each loop\n");
 
 			// Create a new Operator to be Deleted later
 			Operator op = new Operator();
 			op.setName(file.getOriginalFilename().replaceAll(".xls", ""));
-			op.setSubscriptionCost(100);
+			op.setMaxUser(1000);
+			op.setSubscriptionCost(2999);
 			op.setSubscriptionStatus("Active");
 			opRepo.save(op);
 
 			for (Row row : sheet) {
-				if (count > 0) {
+				if (uploadedRowcount > 0) {
 					String servicePackageName = row.getCell(8).getStringCellValue();
 					Double spCost = getCellValueAsNumber(row.getCell(9));
 					System.out.println(row.getCell(8).getStringCellValue());
@@ -67,41 +73,30 @@ public class OperatorDataSetupServiceImpl implements OperatorDataSetupService {
 						}
 
 						if (row.getCell(3).getStringCellValue() != null) {
-							Customer cust = new Customer();
-							cust.setCustomerName(row.getCell(3).getStringCellValue());
-							cust.setAadharNumber(row.getCell(5).getStringCellValue());
-							cust.setAddress(row.getCell(7).getStringCellValue());
-							cust.setBoxId(row.getCell(0).getStringCellValue());
-							cust.setCardNumber(row.getCell(1).getStringCellValue());
-							cust.setCode(row.getCell(10).getStringCellValue());
-							cust.setManufacturer(row.getCell(2).getStringCellValue());
-							cust.setOperator(op);
-							cust.setPackageId(sp.getId());
-							cust.setPhoneNumber(row.getCell(4).getStringCellValue());
-							cust.setStatus("Active");
-							cust.setZone(row.getCell(6).getStringCellValue());
-							custRepo.save(cust);
+							if (custService.isCustomerUnderLimit(op.getId())) {
+								Customer cust = new Customer();
+								cust.setCustomerName(row.getCell(3).getStringCellValue());
+								cust.setAadharNumber(row.getCell(5).getStringCellValue());
+								cust.setAddress(row.getCell(7).getStringCellValue());
+								cust.setBoxId(row.getCell(0).getStringCellValue());
+								cust.setCardNumber(row.getCell(1).getStringCellValue());
+								cust.setCode(row.getCell(10).getStringCellValue());
+								cust.setManufacturer(row.getCell(2).getStringCellValue());
+								cust.setOperator(op);
+								cust.setPackageId(sp.getId());
+								cust.setPhoneNumber(row.getCell(4).getStringCellValue());
+								cust.setStatus("Active");
+								cust.setZone(row.getCell(6).getStringCellValue());
+								custRepo.save(cust);
+								customerCount=customerCount+1;								
+							}
 						}
 					}
 				}
-				count = count + 1;
-				System.out.println(count);
-
-				/*
-				 * for (Cell cell : row) {
-				 * 
-				 * 
-				 * 
-				 * //String cellValue = dataFormatter.formatCellValue(cell);
-				 * 
-				 * byte[] utf8 = cell.getStringCellValue().getBytes("UTF-8");
-				 * 
-				 * // Convert from UTF-8 to Unicode String cellValue= new String(utf8, "UTF-8");
-				 * System.out.print(cellValue); }
-				 */
-				// System.out.println();
+				uploadedRowcount = uploadedRowcount + 1;
+				System.out.println(uploadedRowcount);
 			}
-			System.out.println("Total number of Rows in excell >>>>>" + count);
+			System.out.println("Total number of Rows in excel >>>>>" + uploadedRowcount+">> Processed Count>"+customerCount);
 
 		} catch (EncryptedDocumentException e) {
 			// TODO Auto-generated catch block
@@ -112,7 +107,7 @@ public class OperatorDataSetupServiceImpl implements OperatorDataSetupService {
 		}
 
 		return new ServiceResponse(
-				new ResponseStatus(200, "Operator Data Setup Successfull. Updated customer count>>" + count + ""));
+				new ResponseStatus(200, "Operator Data Setup Successfull. Updated customer count " + customerCount + ""));
 
 	}
 
