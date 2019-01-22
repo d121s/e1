@@ -1,7 +1,5 @@
 package com.deeps.easycable.api.controller;
 
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.deeps.easycable.api.entity.Customer;
 import com.deeps.easycable.api.request.CustomerRequest;
+import com.deeps.easycable.api.request.CustomerSearchType;
+import com.deeps.easycable.api.response.CustomerCollectionResponse;
 import com.deeps.easycable.api.response.ServiceResponse;
 import com.deeps.easycable.api.service.CustomerService;
 
+import lombok.extern.log4j.Log4j2;
+
 @RestController
+@Log4j2
 public class CustomerController {
 
 	private static final Logger LOGGER = LogManager.getLogger(CustomerController.class);
@@ -27,29 +30,33 @@ public class CustomerController {
 	@Autowired
 	CustomerService custServices;
 
-	@GetMapping("/customers")	
-	public List<Customer> getCustomerList(@RequestParam(required = false) Long operatorId,@RequestParam(required = false) Long packageId) {
-		LOGGER.debug("Get Request to view Customer Details");
-		return custServices.getCustomerList(operatorId, packageId);
+	@GetMapping("/customers")
+	public CustomerCollectionResponse getCustomerList(@RequestParam(required = true) Long operatorId,
+			@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int pageSize,
+			@RequestParam(required = false) String searchValue,
+			@RequestParam(required = false) CustomerSearchType searchKey) {
+		log.debug("Get Request to view Customer Details");
+		return custServices.getCustomerList(operatorId, page, pageSize, searchValue, searchKey);
 	}
-	
+
 	@GetMapping("/customers/{customerId}")
 	// @PreAuthorize("hasAnyAuthority('admin')")
-	public Customer getCustomer(@PathVariable("customerId") Long customerId) {
-		LOGGER.debug("Get Request to view Customer Details");
-		return custServices.getCustomerDetails(customerId);
+	public Customer getCustomer(@PathVariable(required = false) Long customerId,
+			@PathVariable(required = false) String qrCode) {
+		log.debug("Get Request to view Customer Details");
+		return custServices.getCustomerDetails(customerId, qrCode);
 	}
-	
+
 	@PostMapping("/customers")
 	public Customer addCustomer(@RequestBody CustomerRequest custRequest) {
 		return custServices.addCustomer(custRequest);
 	}
-	
+
 	@PutMapping("/customers/{customerId}")
-	public Customer updateCustomer(@PathVariable("customerId") Long customerId,@RequestBody CustomerRequest custRequest) {
+	public Customer updateCustomer(@PathVariable("customerId") Long customerId,
+			@RequestBody CustomerRequest custRequest) {
 		return custServices.updateCustomer(custRequest, customerId);
 	}
-	
 
 	@DeleteMapping("/customers/{customerId}")
 	public ServiceResponse deleteCustomer(@PathVariable("customerId") Long customerId) {

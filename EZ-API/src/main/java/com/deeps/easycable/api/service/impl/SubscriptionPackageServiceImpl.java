@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.deeps.easycable.api.entity.SubscriptionPackage;
+import com.deeps.easycable.api.entity.SubscriptionPackageCollection;
+import com.deeps.easycable.api.repo.ChannelRepo;
 import com.deeps.easycable.api.repo.OperatorRepo;
+import com.deeps.easycable.api.repo.SubscriptionPackageCollectionRepo;
 import com.deeps.easycable.api.repo.SubscriptionPackageRepo;
 import com.deeps.easycable.api.request.SubscriptionPackageRequest;
 import com.deeps.easycable.api.response.ResponseStatus;
@@ -14,10 +17,16 @@ import com.deeps.easycable.api.response.ServiceResponse;
 import com.deeps.easycable.api.service.SubscriptionPackageServices;;
 
 @Service
-public class SubscriptionPackageImpl implements SubscriptionPackageServices {
+public class SubscriptionPackageServiceImpl implements SubscriptionPackageServices {
 
 	@Autowired
 	SubscriptionPackageRepo spRepo;
+	
+	@Autowired
+	SubscriptionPackageCollectionRepo spCollectionRepo;
+	
+	@Autowired
+	ChannelRepo chRepo;
 	
 	@Autowired
 	OperatorRepo opRepo;
@@ -25,7 +34,8 @@ public class SubscriptionPackageImpl implements SubscriptionPackageServices {
 	public SubscriptionPackage setSubscriptionPackage(SubscriptionPackageRequest spRequest,SubscriptionPackage sp) {
 		sp.setCost(spRequest.getCost());
 		sp.setName(spRequest.getName());
-		sp.setOperator(opRepo.findById(spRequest.getOperatorId()));
+		sp.setOperator(opRepo.findById(spRequest.getOperatorId()).get());
+		sp.setChannel(chRepo.findAllById(spRequest.getChannelId()));
 		return sp;
 	}
 	
@@ -35,8 +45,8 @@ public class SubscriptionPackageImpl implements SubscriptionPackageServices {
 	}
 	
 	@Override
-	public List<SubscriptionPackage> getPackageList(Long operatorId) {
-		return spRepo.findByOperatorId(operatorId);
+	public List<SubscriptionPackageCollection> getPackageList(Long operatorId) {
+		return spCollectionRepo.findByOperatorId(operatorId);
 	}
 
 	@Override

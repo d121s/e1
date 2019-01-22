@@ -14,11 +14,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.deeps.easycable.api.service.OperatorServices;
+
+import lombok.extern.log4j.Log4j2;
+
 import com.deeps.easycable.api.entity.Operator;
 import com.deeps.easycable.api.request.OperatorRequest;
 import com.deeps.easycable.api.response.ServiceResponse;
 
 @RestController
+@Log4j2
 public class OperatorController {
 
 	private static final Logger LOGGER = LogManager.getLogger(HealthCheckController.class);
@@ -29,14 +33,14 @@ public class OperatorController {
 	@GetMapping("/operators")
 	// @PreAuthorize("hasAnyAuthority('admin')")
 	public List<Operator> getOperatorList() {
-		LOGGER.debug("Get Request to view Operator Details");
+		log.debug("Get Request to view Operator Details");
 		return oprServices.getOperatorDetails();
 	}
 	
 	@GetMapping("/operators/{operatorId}")
 	// @PreAuthorize("hasAnyAuthority('admin')")
 	public Operator getOperator(@PathVariable("operatorId") Long operatorId) {
-		LOGGER.debug("Get Request to view Operator Details");
+		log.debug("Get Request to view Operator Details");
 		return oprServices.getOperator(operatorId);
 	}
 	

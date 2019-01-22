@@ -1,6 +1,8 @@
 package com.deeps.easycable.api.entity;
 
 import java.io.Serializable;
+import java.sql.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,35 +11,44 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Nationalized;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.Data;
+
 @Entity
 @Table
+@Data
 public class Customer implements Serializable {
 
 	private static final long serialVersionUID = 7774563428562961990L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column
-	private long id;
+	@Column(updatable = false, nullable = false)
+	private Long id;
 
+	@Nationalized
 	@Column(unique = false, nullable = false)
 	private String customerName;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "operator_id", nullable = false)
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JsonIgnore
+	@ManyToOne(fetch = FetchType.LAZY,optional=false)
+	@JoinColumn(name = "operator_id", nullable = false)	
 	private Operator operator;
 
-	private long packageId;
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "package_id", nullable = true)
+	private List<SubscriptionPackage> packages;
+	
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "channel_id", nullable = true)
+	private List<Channel> channel;
 
 	private String boxId;
 
@@ -47,129 +58,23 @@ public class Customer implements Serializable {
 
 	private String phoneNumber;
 
-	private String AadharNumber;
+	private String aadharNumber;
+	
+	private double subscriptionCost;
+	
+	private Date subscriptionStartDate;
 
-	private String Zone;
+	@Nationalized
+	private String zone;
 
-	private String Address;
+	@Nationalized
+	private String address;
 
-	private String Code;
+	@Nationalized
+	private String code;
 
 	private String status;
 
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public String getCustomerName() {
-		return customerName;
-	}
-
-	public void setCustomerName(String customerName) {
-		this.customerName = customerName;
-	}
-
-	public Operator getOperator() {
-		return operator;
-	}
-
-	public void setOperator(Operator operator) {
-		this.operator = operator;
-	}
-
-	public String getBoxId() {
-		return boxId;
-	}
-
-	public void setBoxId(String boxId) {
-		this.boxId = boxId;
-	}
-
-	public String getCardNumber() {
-		return cardNumber;
-	}
-
-	public void setCardNumber(String cardNumber) {
-		this.cardNumber = cardNumber;
-	}
-
-	public String getManufacturer() {
-		return manufacturer;
-	}
-
-	public void setManufacturer(String manufacturer) {
-		this.manufacturer = manufacturer;
-	}
-
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-	}
-
-	public String getAadharNumber() {
-		return AadharNumber;
-	}
-
-	public void setAadharNumber(String aadharNumber) {
-		AadharNumber = aadharNumber;
-	}
-
-	public String getZone() {
-		return Zone;
-	}
-
-	public void setZone(String zone) {
-		Zone = zone;
-	}
-
-	public String getAddress() {
-		return Address;
-	}
-
-	public void setAddress(String address) {
-		Address = address;
-	}
-
-	public String getCode() {
-		return Code;
-	}
-
-	public void setCode(String code) {
-		Code = code;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public long getPackageId() {
-		return packageId;
-	}
-
-	public void setPackageId(long packageId) {
-		this.packageId = packageId;
-	}
-
-	@Override
-	public String toString() {
-		return "Customer [id=" + id + ", customerName=" + customerName + ", operator=" + operator + ", packageId="
-				+ packageId + ", boxId=" + boxId + ", cardNumber=" + cardNumber + ", manufacturer=" + manufacturer
-				+ ", phoneNumber=" + phoneNumber + ", AadharNumber=" + AadharNumber + ", Zone=" + Zone + ", Address="
-				+ Address + ", Code=" + Code + ", status=" + status + "]";
-	}
-
-	public Customer() {
-	}
-
+	@Column(unique = true, nullable = false)
+	private String qrCode;
 }

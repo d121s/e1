@@ -1,0 +1,5 @@
+package com.deeps.easycable.api.request;
+
+public enum ChannelLanguage {
+	TAMIL,ENGLISH,HINDI,MALAYALAM,KANNADA,TELUGU,MARATHI,PUNJABI,URDU,BENGALI,ORIYA,ASSAMESE,GUJARATHI,OTHERS;
+}

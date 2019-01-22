@@ -1,9 +1,9 @@
 package com.deeps.easycable.api.service;
 
-import java.util.List;
-
 import com.deeps.easycable.api.entity.Customer;
 import com.deeps.easycable.api.request.CustomerRequest;
+import com.deeps.easycable.api.request.CustomerSearchType;
+import com.deeps.easycable.api.response.CustomerCollectionResponse;
 import com.deeps.easycable.api.response.ServiceResponse;
 
 public interface CustomerService {
@@ -14,9 +14,9 @@ public interface CustomerService {
 
 	public ServiceResponse deleteCustomer(Long customerId);
 
-	public Customer getCustomerDetails(Long customerId);
+	public Customer getCustomerDetails(Long customerId, String qrCode);
 
-	public List<Customer> getCustomerList(Long operatorId, Long packageId);
+	public CustomerCollectionResponse getCustomerList(Long operatorId, int pageNo,int pageSize,String searchValue,CustomerSearchType searchKey);
 	
 	boolean isCustomerUnderLimit(long operatorId);
 
