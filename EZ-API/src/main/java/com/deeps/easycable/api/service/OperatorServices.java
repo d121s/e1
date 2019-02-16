@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.deeps.easycable.api.entity.Operator;
 import com.deeps.easycable.api.request.OperatorRequest;
+import com.deeps.easycable.api.response.AuthResponse;
 import com.deeps.easycable.api.response.ServiceResponse;
 
 public interface OperatorServices {
@@ -17,5 +18,7 @@ public interface OperatorServices {
 	public Operator getOperator(long operatorId);
 
 	public ServiceResponse deleteOperator(long operatorId);
+	
+	public AuthResponse validateUser(String userName, String password);
 
 }

@@ -1,4 +1,4 @@
-package comdeeps.easycable.api.exception;
+package com.deeps.easycable.api.exception;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,6 +70,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
 			errors.add(error.getField() + ": " + error.getDefaultMessage());
 		}
+		
 		for (ObjectError error : ex.getBindingResult().getGlobalErrors()) {
 			errors.add(error.getObjectName() + ": " + error.getDefaultMessage());
 		}

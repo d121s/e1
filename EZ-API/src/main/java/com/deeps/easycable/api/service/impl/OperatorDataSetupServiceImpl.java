@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.poi.EncryptedDocumentException;
@@ -21,6 +22,7 @@ import com.deeps.easycable.api.repo.BulkOperationRepo;
 import com.deeps.easycable.api.repo.CustomerRepo;
 import com.deeps.easycable.api.repo.OperatorRepo;
 import com.deeps.easycable.api.repo.SubscriptionPackageRepo;
+import com.deeps.easycable.api.request.SubscriptionType;
 import com.deeps.easycable.api.response.ResponseStatus;
 import com.deeps.easycable.api.response.ServiceResponse;
 import com.deeps.easycable.api.service.CustomerService;
@@ -47,6 +49,9 @@ public class OperatorDataSetupServiceImpl implements OperatorDataSetupService {
 
 	@Autowired
 	CustomerService custService;
+	
+	@Autowired
+	PasswordEncoder passwordEncoder;
 
 	public ServiceResponse setupOperatorData(MultipartFile file, Long operatorId) {
 
@@ -63,9 +68,12 @@ public class OperatorDataSetupServiceImpl implements OperatorDataSetupService {
 			// Create a new Operator to be Deleted later
 			Operator op = new Operator();
 			op.setName(file.getOriginalFilename().replaceAll(".xls", ""));
+			op.setOperatorAgencyName(op.getName());
 			op.setMaxUser(1000);
 			op.setSubscriptionCost(new Double(2999));
 			op.setSubscriptionStatus("Active");
+			op.setPassword(passwordEncoder.encode("password"));
+			op.setSubscriptionType(SubscriptionType.BASIC);
 			opRepo.save(op);
 
 			int totalCustomerCount = custRepo.findByOperatorId(operatorId).size();

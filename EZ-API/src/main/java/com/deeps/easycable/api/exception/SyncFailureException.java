@@ -1,4 +1,4 @@
-package comdeeps.easycable.api.exception;
+package com.deeps.easycable.api.exception;
 
 public class SyncFailureException extends RuntimeException {
 	

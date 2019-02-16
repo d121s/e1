@@ -63,18 +63,19 @@ public class BulkOperationRepo {
 	@Transactional
 	public void geneterCustomerBill(List<Customer> customerList,java.sql.Date billingMonth) {
 		template.batchUpdate(
-				"insert into customer_payment (payment_amt, payment_status, subscription_cost, billing_month, customer_id, operator_id) values (?, ?, ?, ?, ?, ?)",
+				"insert into customer_payment (payment_amt, writeoff_amt, payment_status, subscription_cost, billing_month, customer_id, operator_id) values (?,?, ?, ?, ?, ?, ?)",
 				new BatchPreparedStatementSetter() {
 
 					@Override
 					public void setValues(PreparedStatement ps, int i) throws SQLException {
 						log.info("Bill genrated count >>" + i);
 						ps.setDouble(1, 0);
-						ps.setString(2, PaymentStatus.NOTPAID.name());
-						ps.setDouble(3, customerList.get(i).getSubscriptionCost());
-						ps.setDate(4, billingMonth);
-						ps.setLong(5, customerList.get(i).getId());
-						ps.setLong(6, customerList.get(i).getOperator().getId());
+						ps.setDouble(2, 0);
+						ps.setString(3, PaymentStatus.NOTPAID.name());
+						ps.setDouble(4, customerList.get(i).getSubscriptionCost());
+						ps.setDate(5, billingMonth);
+						ps.setLong(6, customerList.get(i).getId());
+						ps.setLong(7, customerList.get(i).getOperator().getId());
 					}
 
 					@Override

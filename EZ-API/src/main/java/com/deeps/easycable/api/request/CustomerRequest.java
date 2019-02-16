@@ -1,5 +1,6 @@
 package com.deeps.easycable.api.request;
 
+import java.sql.Date;
 import java.util.List;
 
 import lombok.Data;
@@ -16,6 +17,8 @@ public class CustomerRequest {
 	private List<Long> channelId;
 	
 	private double subscriptionCost;
+	
+	private Date subscriptionStartDate;
 
 	private String boxId;
 

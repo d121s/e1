@@ -12,16 +12,16 @@ import com.deeps.easycable.api.response.ServiceResponse;
 
 public interface CustomerPaymentService {
 
-	public List<CustomerPayment> updateCustomerPayment(CustomerPaymentRequest request, Long customerId);
-
 	public CustomerPayment getPayment(Long paymentId);
 
 	public CustomerColPymtResp getPaymentsByOperator(Long operatorId, int page, int pageSize,
-			String searchValue, CustomerSearchType searchKey, boolean isNotPaid);
+			String searchValue, CustomerSearchType searchKey, Boolean isNotPaid);
 
 	public CustomerPayment updatePayment(CustomerPaymentRequest request, Long paymentId,boolean isWriteOff);
 
 	public ServiceResponse generateBilling(Long operatorId, Date billingMonth);
 	
 	public CustomerPaymentResponse getPaymentsByCustomer(Long customerId);
+	
+	public CustomerPaymentResponse updateCustomerPayment(CustomerPaymentRequest request, Long customerId);
 }

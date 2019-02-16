@@ -37,8 +37,8 @@ public class Customer implements Serializable {
 	@Column(unique = false, nullable = false)
 	private String customerName;
 
+	@ManyToOne(optional=false)
 	@JsonIgnore
-	@ManyToOne(fetch = FetchType.LAZY,optional=false)
 	@JoinColumn(name = "operator_id", nullable = false)	
 	private Operator operator;
 

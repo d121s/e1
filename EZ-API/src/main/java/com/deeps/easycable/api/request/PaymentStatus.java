@@ -1,5 +1,5 @@
 package com.deeps.easycable.api.request;
 
 public enum PaymentStatus {
-	PAID,NOTPAID,WRITEOFF,PARTIAL;
+	PAID,NOTPAID,WRITEOFF,PARTIAL,NOBILLING;
 }

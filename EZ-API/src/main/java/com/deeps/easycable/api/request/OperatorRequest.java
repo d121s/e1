@@ -4,9 +4,13 @@ import lombok.Data;
 
 @Data
 public class OperatorRequest {
+	private String emailId;
 	private String name;
-	private String subscriptionType;
-	private int maxUser;
+	private String password;
+	private SubscriptionType subscriptionType;	
+	private Integer maxUser;
 	private String subscriptionStatus;
+	private String operatorAgencyName;
 	private Double subscriptionCost;
+	private Integer billingDate;
 }

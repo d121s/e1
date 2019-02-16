@@ -16,8 +16,9 @@ public interface CustomerService {
 
 	public Customer getCustomerDetails(Long customerId, String qrCode);
 
-	public CustomerCollectionResponse getCustomerList(Long operatorId, int pageNo,int pageSize,String searchValue,CustomerSearchType searchKey);
-	
+	public CustomerCollectionResponse getCustomerList(Long operatorId, int pageNo, int pageSize, String searchValue,
+			CustomerSearchType searchKey);
+
 	boolean isCustomerUnderLimit(long operatorId);
 
 }

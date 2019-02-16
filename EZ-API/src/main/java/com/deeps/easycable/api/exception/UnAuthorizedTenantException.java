@@ -1,4 +1,4 @@
-package comdeeps.easycable.api.exception;
+package com.deeps.easycable.api.exception;
 
 public class UnAuthorizedTenantException extends RuntimeException{
 	private static final long serialVersionUID = 1L;

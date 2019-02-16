@@ -53,6 +53,9 @@ public class CustomerPayment implements Serializable {
 
 	@Column(nullable = false)
 	private Double paymentAmt;
+	
+	@Column(nullable = true)
+	private Double writeoffAmt;
 
 	@Column(nullable = false)
 	private String paymentStatus;

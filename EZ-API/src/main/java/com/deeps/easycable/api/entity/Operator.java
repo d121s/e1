@@ -14,6 +14,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.deeps.easycable.api.request.SubscriptionType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
@@ -30,15 +31,20 @@ public class Operator implements Serializable {
 	@Column(updatable = false, nullable = false)
 	private Long id;	
 
-	@Column(unique = false)
+	@Column(unique = true,nullable=false)
 	private String name;
 	
-	@Column(unique = true, nullable =true)
+	@Column(nullable =true)
 	private String email;
 
+	@Column(nullable =false)
+	@JsonIgnore
 	private String  password;
+	
+	private String operatorAgencyName;
 
-	private String subscriptionType;
+	@Column(nullable=false)
+	private SubscriptionType subscriptionType;
 
 	private Integer maxUser;
 
@@ -48,16 +54,17 @@ public class Operator implements Serializable {
 	@Column(nullable = false)
 	private Double subscriptionCost;
 	
-	private int billingDay;
-	
+	private Integer billingDay;	
 	
 	@OneToMany(mappedBy="operator")
 	@OnDelete(action = OnDeleteAction.CASCADE)
+	@Column(nullable=true)
 	@JsonIgnore
 	private List<Customer> customers;
 	
 	@OneToMany(mappedBy="operator")
 	@OnDelete(action = OnDeleteAction.CASCADE)
+	@Column(nullable=true)
 	@JsonIgnore
 	private List<SubscriptionPackage> packages;
 	

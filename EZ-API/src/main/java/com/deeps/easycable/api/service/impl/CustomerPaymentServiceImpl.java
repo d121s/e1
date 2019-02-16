@@ -14,6 +14,8 @@ import com.deeps.easycable.api.ApiUtils;
 import com.deeps.easycable.api.entity.Customer;
 import com.deeps.easycable.api.entity.CustomerCollection;
 import com.deeps.easycable.api.entity.CustomerPayment;
+import com.deeps.easycable.api.exception.CustomException;
+import com.deeps.easycable.api.exception.MandatoryDataMissingException;
 import com.deeps.easycable.api.repo.BulkOperationRepo;
 import com.deeps.easycable.api.repo.CustomerPaymentCollectionRepo;
 import com.deeps.easycable.api.repo.CustomerPaymentRepo;
@@ -30,8 +32,8 @@ import com.deeps.easycable.api.response.ResponseStatus;
 import com.deeps.easycable.api.response.ServiceResponse;
 import com.deeps.easycable.api.service.CustomerPaymentService;
 import com.deeps.easycable.api.service.CustomerService;
+import com.google.common.util.concurrent.AtomicDouble;
 
-import comdeeps.easycable.api.exception.CustomException;
 import lombok.extern.log4j.Log4j2;
 
 @Service
@@ -61,13 +63,26 @@ public class CustomerPaymentServiceImpl implements CustomerPaymentService {
 
 	public CustomerPayment setCustPayment(CustomerPaymentRequest request, CustomerPayment custPayment,
 			boolean isWriteOff) {
-		custPayment.setPaymentAmt(request.getPaymentAmt());
 		custPayment.setPaymentDate(new Date());
-		if (isWriteOff || custPayment.getPaymentStatus().equalsIgnoreCase(PaymentStatus.WRITEOFF.name())) {
+		if (request.getWriteOffAmt() > custPayment.getSubscriptionCost()) {
+			throw new MandatoryDataMissingException("Write Off Ammount cannot be greater than Payment Ammount");
+		}
+		
+		if(custPayment.getSubscriptionCost() < (request.getPaymentAmt()+request.getWriteOffAmt())) {
+			throw new MandatoryDataMissingException(" Total WriteOff + Payment is greater than actual Subscription cost");
+		}
+		
+		if (isWriteOff || custPayment.getPaymentStatus().equalsIgnoreCase(PaymentStatus.WRITEOFF.name())) {			
 			custPayment.setPaymentStatus(PaymentStatus.WRITEOFF.name());
+			custPayment.setWriteoffAmt(request.getWriteOffAmt());
 		} else {
 			custPayment.setPaymentStatus(getPaymentStatus(custPayment.getSubscriptionCost(), request.getPaymentAmt()));
 		}
+		custPayment.setPaymentAmt(request.getPaymentAmt());
+		if (custPayment.getSubscriptionCost() - (custPayment.getPaymentAmt() + custPayment.getWriteoffAmt()) == 0) {
+			custPayment.setPaymentStatus(PaymentStatus.PAID.name());
+		}
+
 		return custPayment;
 	}
 
@@ -75,6 +90,7 @@ public class CustomerPaymentServiceImpl implements CustomerPaymentService {
 		custPayment.setCustomer(customer);
 		custPayment.setOperator(opRepo.getOne(customer.getOperator().getId()));
 		custPayment.setPaymentAmt(new Double(0));
+		custPayment.setWriteoffAmt(new Double(0));
 		custPayment.setPaymentDate(null);
 		custPayment.setSubscriptionCost(customer.getSubscriptionCost());
 		custPayment.setBillingMonth(ApiUtils.getFirstDateOfCurrentMonth());
@@ -92,41 +108,6 @@ public class CustomerPaymentServiceImpl implements CustomerPaymentService {
 		} else {
 			return PaymentStatus.PAID.name();
 		}
-	}
-
-	@Override
-	public List<CustomerPayment> updateCustomerPayment(CustomerPaymentRequest request, Long customerId) {
-		Double totalPayment = request.getPaymentAmt();
-		Double paymentAmt = null;
-		double pendingAmt = 0;
-		List<CustomerPayment> paymentList = custPayRepo.findByCustomerIdAndPaymentStatusInOrderByBillingMonthAsc(
-				customerId, Arrays.asList(PaymentStatus.NOTPAID.name(), PaymentStatus.PARTIAL.name()));
-
-		pendingAmt = paymentList.stream()
-				.collect(Collectors.summingDouble(payment -> payment.getSubscriptionCost() - payment.getPaymentAmt()));
-
-		if (totalPayment > pendingAmt) {
-			throw new CustomException(
-					"Payment amount " + totalPayment + " is greater than pending Amount " + pendingAmt);
-		}
-
-		for (CustomerPayment custPayment : paymentList) {
-			paymentAmt = custPayment.getSubscriptionCost() - custPayment.getPaymentAmt();
-			custPayment.setPaymentDate(null != request.getPaymentDate() ? request.getPaymentDate() : new Date());
-			if (totalPayment >= paymentAmt) {
-				custPayment.setPaymentAmt(custPayment.getPaymentAmt()+paymentAmt);
-				custPayment.setPaymentStatus(PaymentStatus.PAID.name());
-				custPayRepo.save(custPayment);
-			} else {
-				custPayment.setPaymentAmt(custPayment.getPaymentAmt()+totalPayment);
-				custPayment.setPaymentStatus(PaymentStatus.PARTIAL.name());
-				custPayRepo.save(custPayment);
-				break;
-			}
-			totalPayment = totalPayment - paymentAmt;
-
-		}
-		return paymentList;
 	}
 
 	@Override
@@ -150,13 +131,57 @@ public class CustomerPaymentServiceImpl implements CustomerPaymentService {
 	}
 
 	@Override
+	public CustomerPaymentResponse updateCustomerPayment(CustomerPaymentRequest request, Long customerId) {
+		Double totalPayment = request.getPaymentAmt();
+		Double paymentAmt = null;
+		double pendingAmt = 0;
+		List<CustomerPayment> paymentList = custPayRepo.findByCustomerIdAndPaymentStatusInOrderByBillingMonthAsc(
+				customerId, Arrays.asList(PaymentStatus.NOTPAID.name(), PaymentStatus.PARTIAL.name(),
+						PaymentStatus.WRITEOFF.name()));
+
+		pendingAmt = paymentList.stream().collect(Collectors.summingDouble(
+				payment -> payment.getSubscriptionCost() - (payment.getPaymentAmt() + payment.getWriteoffAmt())));
+
+		if (totalPayment > pendingAmt) {
+			throw new CustomException(
+					"Payment amount " + totalPayment + " is greater than pending Amount " + pendingAmt);
+		}
+
+		for (CustomerPayment custPayment : paymentList) {
+			paymentAmt = custPayment.getSubscriptionCost()
+					- (custPayment.getPaymentAmt() + custPayment.getWriteoffAmt());
+			custPayment.setPaymentDate(null != request.getPaymentDate() ? request.getPaymentDate() : new Date());
+			if (totalPayment >= paymentAmt) {
+				custPayment.setPaymentAmt(custPayment.getPaymentAmt() + paymentAmt);
+				custPayment.setPaymentStatus(PaymentStatus.PAID.name());
+				custPayRepo.save(custPayment);
+			} else {
+				custPayment.setPaymentAmt(custPayment.getPaymentAmt() + totalPayment);
+				custPayment
+						.setPaymentStatus(custPayment.getPaymentStatus().equalsIgnoreCase(PaymentStatus.WRITEOFF.name())
+								? PaymentStatus.WRITEOFF.name()
+								: PaymentStatus.PARTIAL.name());
+				custPayRepo.save(custPayment);
+				break;
+			}
+			totalPayment = totalPayment - paymentAmt;
+
+		}
+		return getPaymentsByCustomer(customerId);
+	}
+
+	@Override
 	public CustomerPaymentResponse getPaymentsByCustomer(Long customerId) {
-		Double paymentAmt = (Double) custPayColRepo.findPaymentByCustomerId(customerId);
+		List<CustomerPayment> paymentList = custPayRepo.findByCustomerIdOrderByBillingMonthDesc(customerId);
+		AtomicDouble paymentAmt = new AtomicDouble();
+		paymentList.forEach(cust -> paymentAmt
+				.set(cust.getSubscriptionCost() - (cust.getWriteoffAmt() + cust.getPaymentAmt()) + paymentAmt.get()));
+		log.info("Pending payment ammount >>" + paymentAmt);
 		CustomerPaymentResponse custResponse = new CustomerPaymentResponse();
 		custResponse.setCustomerId(customerId);
-		custResponse.setCustomerPayment(custPayRepo.findByCustomerIdOrderByBillingMonthDesc(customerId));
-		custResponse.setPaymentAmt(paymentAmt);
-		custResponse.setPaymentStatus(paymentAmt > 0 ? PaymentStatus.NOTPAID.name() : PaymentStatus.PAID.name());
+		custResponse.setCustomerPayment(paymentList);
+		custResponse.setPendingAmt(paymentAmt.get());
+		custResponse.setPaymentStatus(paymentAmt.get() > 0 ? PaymentStatus.NOTPAID.name() : PaymentStatus.PAID.name());
 		return custResponse;
 	}
 
@@ -167,7 +192,7 @@ public class CustomerPaymentServiceImpl implements CustomerPaymentService {
 
 	@Override
 	public CustomerColPymtResp getPaymentsByOperator(Long operatorId, int pageNo, int pageSize, String searchValue,
-			CustomerSearchType searchKey, boolean isNotPaid) {
+			CustomerSearchType searchKey, Boolean isNotPaid) {
 		CustomerCollectionResponse custList = custService.getCustomerList(operatorId, pageNo, pageSize, searchValue,
 				searchKey);
 		List<Object[]> paymentList = custPayColRepo.findPaymentByOperatorId(operatorId);
@@ -186,26 +211,31 @@ public class CustomerPaymentServiceImpl implements CustomerPaymentService {
 	}
 
 	public List<CustomerCollection> setCustomerPayment(List<CustomerCollection> custList, List<Object[]> paymentList,
-			boolean isNotPaid) {
+			Boolean isNotPaid) {
 		List<CustomerCollection> customerList = new ArrayList<>();
 		for (CustomerCollection cust : custList) {
-			Object[] custPayment = paymentList.stream().filter(pay -> cust.getId() == (long) pay[1]).findAny()
+			Object[] custPayment = paymentList.stream().filter(pay -> cust.getId() == (long) pay[3]).findAny()
 					.orElse(null);
+
 			if (custPayment != null) {
-				double pendingAmt = (Double) custPayment[0];
+				double pendingAmt = (Double) custPayment[0] - ((Double) custPayment[1] + (Double) custPayment[2]);
 				cust.setPendingPaymentAmt(pendingAmt);
 				String payStatus = pendingAmt > 0 ? PaymentStatus.NOTPAID.name() : PaymentStatus.PAID.name();
 				cust.setPaymentStatus(payStatus);
 			} else {
-				log.info("Payment Skipped for >>" + cust.getId());
+				cust.setPendingPaymentAmt(new Double(0));
+				cust.setPaymentStatus(PaymentStatus.NOBILLING.name());
+				log.info("No Payment info found for Customer >>" + cust.getCustomerName());
 			}
 			customerList.add(cust);
 		}
-
-		if (isNotPaid) {
-			customerList.removeIf(cust -> cust.getPaymentStatus().equalsIgnoreCase(PaymentStatus.PAID.name()));
-		} else {
-			customerList.removeIf(cust -> cust.getPaymentStatus().equalsIgnoreCase(PaymentStatus.NOTPAID.name()));
+		if (null != isNotPaid) {
+			if (isNotPaid) {
+				customerList.removeIf(cust -> cust.getPaymentStatus().equalsIgnoreCase(PaymentStatus.PAID.name()));
+				customerList.removeIf(cust -> cust.getPaymentStatus().equalsIgnoreCase(PaymentStatus.NOBILLING.name()));
+			} else {
+				customerList.removeIf(cust -> cust.getPaymentStatus().equalsIgnoreCase(PaymentStatus.NOTPAID.name()));
+			}
 		}
 		return customerList;
 	}

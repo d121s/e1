@@ -1,7 +1,5 @@
 package com.deeps.easycable.api.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,7 +33,7 @@ public class CustomerPaymentController {
 	}
 
 	@PutMapping("/customer/{customerId}/payment")
-	public List<CustomerPayment> updateCustomerPayment(@PathVariable(required = true) Long customerId,
+	public CustomerPaymentResponse updateCustomerPayment(@PathVariable(required = true) Long customerId,
 			@RequestBody CustomerPaymentRequest custPayRequest) {
 		log.info("Addding Customer Payment ");
 		return custPaymentService.updateCustomerPayment(custPayRequest, customerId);

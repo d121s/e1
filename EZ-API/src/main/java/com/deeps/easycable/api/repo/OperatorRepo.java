@@ -9,5 +9,5 @@ import com.deeps.easycable.api.entity.Operator;
 @Repository
 public interface OperatorRepo extends JpaRepository<Operator,Long>{
 
-	public Operator findById(long id);
+	public Operator findByName(String username);
 }

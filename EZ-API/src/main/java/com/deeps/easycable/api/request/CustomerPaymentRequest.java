@@ -8,6 +8,8 @@ import lombok.Data;
 public class CustomerPaymentRequest {
 
 	private double paymentAmt;
+	
+	private double writeOffAmt;
 
 	private Date paymentDate;
 }
